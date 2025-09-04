@@ -1,0 +1,55 @@
+services:
+  flask:
+    build:
+      context: ./Continuous-Delivery-in-flaskAPI-ToDoList
+      dockerfile: Dockerfile
+    container_name: flask_app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.flask.rule=PathPrefix(`/`)"
+      - "traefik.http.services.flask.loadbalancer.server.port=8080"
+      - "traefik.http.routers.flask.entrypoints=web"
+    networks:
+      - traefik
+    expose:
+      - "8080"
+
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--api.dashboard=true"
+      - "--entrypoints.web.address=:85"
+      - "--entrypoints.traefik.address=:8900"
+      - "--providers.docker=true"
+      - "--metrics.prometheus=true"
+      - "--api.insecure=true"
+    ports:
+      - "85:85"          # Web access
+      - "8900:8900"      # Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - traefik
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - traefik
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    driver: bridge
