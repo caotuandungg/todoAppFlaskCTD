@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
+import logging
 
 app = Flask(__name__)
 
@@ -7,6 +8,11 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///todo.db"
 
 db = SQLAlchemy(app)
 app.app_context().push()
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 class Todo(db.Model):
@@ -26,10 +32,12 @@ def index():
 def add():
     # return '<h1>{}</h1>'.format(request.form['todoitem'])
     todo = Todo(text=request.form["todoitem"], complete=False)
+    
     db.session.add(todo)
     db.session.commit()
-    return redirect(url_for("index"))
 
+    return redirect(url_for("index"))
+    
 
 @app.route("/complete/<id>")
 def complete(id):
