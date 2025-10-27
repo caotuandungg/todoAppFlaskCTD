@@ -1,0 +1,12 @@
+replicaCount: 1
+
+image:
+  repository: caotuandung/todoapp
+  tag: latest
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 80
+
+containerPort: 80
