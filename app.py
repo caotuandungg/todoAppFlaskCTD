@@ -1,10 +1,15 @@
 from flask import Flask, render_template, request, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
+from prometheus_flask_exporter import PrometheusMetrics
 import logging
 
 app = Flask(__name__)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///todo.db"
+
+#Prometheus monitoring
+app = Flask(__name__)
+metrics = PrometheusMetrics(app)
 
 db = SQLAlchemy(app)
 app.app_context().push()
@@ -60,6 +65,10 @@ def delete(id):
         return redirect("/")
     except:
         return "having trouble deleting task"
+    
+@app.route("/")
+def hello():
+    return "Hello from Flask!"
 
 
 if __name__ == "__main__":
